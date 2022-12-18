@@ -1,8 +1,15 @@
 import express from 'express';
 import fs from 'fs/promises';
 import {} from 'express-async-errors';
+import cors from 'cors';
 
 const app = express();
+
+app.use(cors({
+    origin: ['원하는주소?'],
+    optionsSuccessStatus: 200,
+    credentials: true, // Access-Cross-Allow-Credentials : true
+}));
 
 app.get('/', (req,res,next) => {
     console.log('first');
