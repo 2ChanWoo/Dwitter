@@ -1,5 +1,6 @@
 import express from 'express';
 import fs from 'fs/promises';
+import {} from 'express-async-errors';
 
 const app = express();
 
@@ -12,7 +13,9 @@ app.get('/', (req,res,next) => {
 });
 app.get('/', (req,res,next) => {
     console.log('second');
-    fs.readFile('asd');
+    return fs.readFile('asd');  
+    //express-async-errors를 import만 해 줘도 비동기 처리가 가능함.
+    //! 단, 미들웨어에서 promise 를 return 하는 경우에만.
 });
 
 app.all((req,res,next) => {
