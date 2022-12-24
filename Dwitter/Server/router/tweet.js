@@ -1,5 +1,6 @@
 import express from 'express';
 import 'express-async-errors';
+import * as tweetController from '../controller/tweet.js';
 
 //! const app = express(); 
 //.... 하고 get메서드들을 전부 router.get 이 아닌, app.get으로 해서 계속 404발생....
@@ -7,41 +8,21 @@ import 'express-async-errors';
 
 const router = express.Router();
 
-const tweets = [{
-    id: '1',
-    text: 'content is!',
-    createdAt: Date.now().toString(),
-    name: 'Bob',
-    username: 'bob',
-    url: 'https://widgetwhats.com/router/uploads/2019/11/free-profile-photo-whatsrouter-1.png',
-}];
 
-router.get('/', (req, res, next) => {
-    const username = req.query.username;
-    const data = username ? tweets.filter((t) => t.username === username) : tweets;
+// GET /tweets
+// GET /tweets?username=:username
+router.get('/', tweetController.getTweets);
 
+// GET /tweets/:id
+router.get('/:id', tweetController.getTweet);
 
-    res.status(200).json(data);
-});
+// POST /tweeets
+router.post('/', tweetController.createTweet);
 
-router.get('/:id', (req, res, next) => {
+// PUT /tweets/:id
+router.put('/:id', tweetController.updateTweet);
 
-});
-
-router.get('/', (req, res, next) => {
-
-});
-
-router.post('/', (req, res, next) => {
-
-});
-
-router.put('/', (req, res, next) => {
-
-});
-
-router.delete('/', (req, res, next) => {
-
-});
+// DELETE /tweets/:id
+router.delete('/:id', tweetController.deleteTweet);
 
 export default router;
