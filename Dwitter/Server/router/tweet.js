@@ -1,6 +1,8 @@
 import express from 'express';
 import 'express-async-errors';
+import { body } from 'express-validator';
 import * as tweetController from '../controller/tweet.js';
+import {validate} from '../middleware/validator.js'
 
 //! const app = express(); 
 //.... 하고 get메서드들을 전부 router.get 이 아닌, app.get으로 해서 계속 404발생....
@@ -8,6 +10,13 @@ import * as tweetController from '../controller/tweet.js';
 
 const router = express.Router();
 
+const validateTweet = [
+    body('text')
+    .trim()
+    .isLength({ min: 3})
+    .withMessage('text should be at least 3 charactors'),
+    validate,
+];
 
 // GET /tweets
 // GET /tweets?username=:username
@@ -17,12 +26,13 @@ router.get('/', tweetController.getTweets);
 router.get('/:id', tweetController.getTweet);
 
 // POST /tweeets
-router.post('/', tweetController.createTweet);
+router.post('/', validateTweet, tweetController.createTweet);
 
 // PUT /tweets/:id
-router.put('/:id', tweetController.updateTweet);
+router.put('/:id', validateTweet, tweetController.updateTweet);
 
 // DELETE /tweets/:id
 router.delete('/:id', tweetController.deleteTweet);
 
 export default router;
+
