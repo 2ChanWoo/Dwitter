@@ -1,40 +1,53 @@
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import {} from 'express-async-errors';
+import * as userRepository from '../data/auth_repository.js';
 
-var users = [
-    {
-        "username": "ellie",
-        "password": "12345",
-        "name": "ellie",
-        "email": "ellie@gmail.com",
-        "url": ""
-    }
-]
-
+// TODO: Make it secure!
+const jwtSecretKey = 'F2dN7x8HVzBWaQuEEDnhsvHXRWqAR63z';
+const jwtExpiresInDays = '2d';
+const bcryptSaltRounds = 12;
 
 export async function signup(req, res) {
-    // 아이디 비번 이름 이멜 유알엘 받아오고
-    const {username, password, name, email, url} = req.body;
-    const user = {
-        username,
-        password,
-        name,
-        email,
-        url,
-    };
-    users = [user, ...users];
-    res.status(201).json(user);
-    // data -> 디비에 정보 기입.
-    // 이것도 토큰 응답으로 보내주고.
+  const { username, password, name, email, url } = req.body;
+  const found = await userRepository.findByUsername(username);
+  if (found) {
+    return res.status(409).json({ message: `${username} already exists` });
+  }
+  const hashed = await bcrypt.hash(password, bcryptSaltRounds);
+  const userId = await userRepository.createUser({
+    username,
+    password: hashed,
+    name,
+    email,
+    url,
+  });
+  const token = createJwtToken(userId);
+  res.status(201).json({ token, username });
 }
 
-export async function login(req, res) { 
-// 아이디 비번 받아오고
-const username = req.body.username;
-const user = users.find((e) => e.username === username);
-res.status(200).json(user);
-// 해당 아이디 찾고 비번 매칭해서 맞으면 보내긔. <- 이건 데이터? 아님 컨트롤러?
-// 응답으로는 토큰 보내주면 되지.
+export async function login(req, res) {
+  const { username, password } = req.body;
+  const user = await userRepository.findByUsername(username);
+  if (!user) {
+    return res.status(401).json({ message: 'Invalid user or password' });
+  }
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
+    return res.status(401).json({ message: 'Invalid user or password' });
+  }
+  const token = createJwtToken(user.id);
+  res.status(200).json({ token, username });
 }
 
-export async function me(req, res) {
-    // 머하는놈인지 
+function createJwtToken(id) {
+  return jwt.sign({ id }, jwtSecretKey, { expiresIn: jwtExpiresInDays });
+}
+
+export async function me(req, res, next) {
+  const user = await userRepository.findById(req.userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  res.status(200).json({ token: req.token, username: user.username });
 }
