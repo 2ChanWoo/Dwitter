@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import 'express-async-errors';
 
 import tweetsRouter from './router/tweet.js';
+import authRouter from './router/auth_router.js';
 
 const app = express();
 
@@ -16,7 +17,14 @@ app.use(morgan('[:date] :remote-addr :method :url :status :res[content-length] -
 app.use(helmet());
 
 
+app.use('/', (req, res, next) => {
+    console.log('\nnew request!!');
+    console.log(req.body);
+    console.log(req.url);
+    next();
+});
 app.use('/tweets', tweetsRouter);
+app.use('/Auth', authRouter);
 
 app.use((req, res, next) => {
     res.sendStatus(404);
