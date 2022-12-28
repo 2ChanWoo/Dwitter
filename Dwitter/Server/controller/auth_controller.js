@@ -26,7 +26,7 @@ export async function signup(req, res) {
     // 이것도 토큰 응답으로 보내주고.
 }
 
-export async function login(req, res) { 앜ㅋ 비밀번호 검증을 안함 ㅁㅈ
+export async function login(req, res) { 
 // 아이디 비번 받아오고
 const username = req.body.username;
 const user = users.find((e) => e.username === username);
