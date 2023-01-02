@@ -3,13 +3,14 @@ import cors from 'cors';
 import morgan  from 'morgan';
 import helmet from 'helmet';
 import 'express-async-errors';
+import dotenv from 'dotenv';
 
 import tweetsRouter from './router/tweet.js';
 import authRouter from './router/auth_router.js';
+import { config } from './config.js';
 
 const app = express();
-
-const port = 8080;
+dotenv.config();
 
 app.use(express.json());
 app.use(cors());
@@ -35,4 +36,4 @@ app.use((error, req, res, next) => {
     res.sendStatus(500);
 })
 
-app.listen(port);
+app.listen(config.host.port);
