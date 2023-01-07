@@ -8,7 +8,6 @@ import dotenv from 'dotenv';
 import tweetsRouter from './router/tweet.js';
 import authRouter from './router/auth_router.js';
 import { config } from './config.js';
-import { db } from './db/database.js';
 
 const app = express();
 dotenv.config();
@@ -36,5 +35,4 @@ app.use((error, req, res, next) => {
     console.error(error);
     res.sendStatus(500);
 })
-db.getConnection().then(console.log);
 app.listen(config.host.port);

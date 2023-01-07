@@ -7,12 +7,6 @@ let tweets = [
       createdAt: new Date().toString(),
       userId: '1'
     },
-    {
-      id: '2',
-      text: '안뇽!',
-      createdAt: Date.now().toString(),
-      userId: '2'
-    },
   ];
   
   export async function getAll() {
