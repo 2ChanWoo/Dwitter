@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import tweetsRouter from './router/tweet.js';
 import authRouter from './router/auth_router.js';
 import { config } from './config.js';
+import { connectDB } from './database/database.js';
 
 const app = express();
 dotenv.config();
@@ -36,4 +37,7 @@ app.use((error, req, res, next) => {
     res.sendStatus(500);
 })
 
-app.listen(config.host.port);
+connectDB().then((db) => {
+    console.log('init!', db);
+    app.listen(config.host.port);
+}).catch(console.error);
