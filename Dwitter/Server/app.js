@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import tweetsRouter from './router/tweet.js';
 import authRouter from './router/auth_router.js';
 import { config } from './config.js';
+import { sequelize } from './db/database.js';
 
 const app = express();
 dotenv.config();
@@ -35,4 +36,10 @@ app.use((error, req, res, next) => {
     console.error(error);
     res.sendStatus(500);
 })
-app.listen(config.host.port);
+
+sequelize
+.sync()
+.then((client) => {
+    // console.log(client);
+    app.listen(config.host.port);
+});

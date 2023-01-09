@@ -1,29 +1,79 @@
-import * as userRepository from './auth_repository.js';
-import {db} from '../db/database.js';
-  
+import SQ from 'sequelize';
+import { sequelize } from '../db/database.js';
+import { User } from './auth_repository.js';
+const DataTypes = SQ.DataTypes;
+const Sequelize = SQ.Sequelize;
 
-const SELECT_JOIN =
-  'SELECT tw.id, tw.text, tw.createdAt, tw.userId, us.username, us.name, us.url FROM tweets as tw JOIN users as us ON tw.userId=us.id';
-const ORDER_DESC = 'ORDER BY tw.createdAt DESC';
+const Tweet = sequelize.define('tweet', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    allowNull: false,
+    primaryKey: true,
+  },
+  text: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+});
+Tweet.belongsTo(User);
+
+const INCLUDE_USER = {
+  attributes: [
+    'id',
+    'text',
+    'createdAt',
+    'userId',
+    [Sequelize.col('user.name'), 'name'],
+    [Sequelize.col('user.username'), 'username'],
+    [Sequelize.col('user.url'), 'url'],
+  ],
+  include: {
+    model: User,
+    attributes: [],
+  },
+};
+
+const ORDER_DESC = {
+  order: [['createdAt', 'DESC']],
+};
+
+// const SELECT_JOIN =
+//   'SELECT tw.id, tw.text, tw.createdAt, tw.userId, us.username, us.name, us.url FROM tweets as tw JOIN users as us ON tw.userId=us.id';
+// const ORDER_DESC = 'ORDER BY tw.createdAt DESC';
 
 export async function getAll() {
-  return db
-    .execute(`${SELECT_JOIN} ${ORDER_DESC}`) //
-    .then((result) => result[0]);
+  return Tweet.findAll({ ...INCLUDE_USER, ...ORDER_DESC });
+
+  // return db
+  //   .execute(`${SELECT_JOIN} ${ORDER_DESC}`) //
+  //  .then((result) => result[0]);
 }
 
   //! promise 헷갈리는데..?! promise.then 을 return 으로 넘겨도..  => then을 넘겨도 되는거야?
 export async function getAllByUsername(username) {
-  return db
-    .execute(`${SELECT_JOIN} WHERE username=? ${ORDER_DESC}`, [username]) //
-    .then((result) => result[0]);
+  return Tweet.findAll({
+    ...INCLUDE_USER,
+    ...ORDER_DESC,
+    include: {
+      ...INCLUDE_USER.include,  //! include 가 중복되도 괜찮은가 본데...?
+      where: { username },
+    },
+  });
+  // return db
+  //   .execute(`${SELECT_JOIN} WHERE username=? ${ORDER_DESC}`, [username]) //
+  //   .then((result) => result[0]);
 }
 
   /// '트윗' 아이디로부터 객체 찾기.
 export async function getById(id) {
-  return db
-    .execute(`${SELECT_JOIN} WHERE tw.id=?`, [id])
-    .then((result) => result[0][0]);
+  return Tweet.findOne({
+    where: { id },
+    ...INCLUDE_USER,
+  });
+  // return db
+  //   .execute(`${SELECT_JOIN} WHERE tw.id=?`, [id])
+  //   .then((result) => result[0][0]);
     // const found = tweets.find((tweet) => tweet.id === id);
     // if(!found) return null;
     // const {username, name, url} = userRepository.findById((user) => user.id === found.userId);
@@ -40,26 +90,39 @@ export async function getById(id) {
 }
 
 export async function create(text, userId) {
+
+  return Tweet.create({ text, userId }) //
+    .then((data) => this.getById(data.dataValues.id));
+
   // console.log(Date.now().toString());
   // console.log(new Date().toString());
   // console.log(Date().toString());  
   // console.log(new Date());  
   //! what defference? about keyword 'new'
-  return db
-    .execute('INSERT INTO tweets (text, createdAt, userId) VALUES(?,?,?)', [
-      text,
-      new Date(),
-      userId,
-    ])
-    .then((result) => getById(result[0].insertId));
+  // return db
+  //   .execute('INSERT INTO tweets (text, createdAt, userId) VALUES(?,?,?)', [
+  //     text,
+  //     new Date(),
+  //     userId,
+  //   ])
+  //   .then((result) => getById(result[0].insertId));
 }
 
 export async function update(id, text) {
-  return db
-    .execute('UPDATE tweets SET text=? WHERE id=?', [text, id])
-    .then(() => getById(id));
+  return Tweet.findByPk(id, INCLUDE_USER) //
+    .then((tweet) => {
+      tweet.text = text;
+      return tweet.save();
+    });
+  // return db
+  //   .execute('UPDATE tweets SET text=? WHERE id=?', [text, id])
+  //   .then(() => getById(id));
 }
 
 export async function remove(id) {
-  return db.execute('DELETE FROM tweets WHERE id=?', [id]);
+  return Tweet.findByPk(id) //
+    .then((tweet) => {
+      tweet.destroy();
+    });
+  // return db.execute('DELETE FROM tweets WHERE id=?', [id]);
 }
