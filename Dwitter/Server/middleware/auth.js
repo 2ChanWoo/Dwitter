@@ -17,7 +17,7 @@ export const isAuth = async (req, res, next) => {
     config.jwt.secretKey,
     async (error, decoded) => {
       if (error) {
-        return res.status(401).json(AUTH_ERROR);
+        return res.status(401).json(AUTH_ERROR);  //! 왜 me에서 Authorization을 헤더에 직접 설정하면 여기에 걸리는지.. 폴더에 설정하면 동작함..ㅠ
       }
       const user = await userRepository.findById(decoded.id);
       if (!user) {
