@@ -1,15 +1,20 @@
+import Mongoose from 'mongoose';
 import { config } from '../config.js';
-import MongoDB from 'mongodb';
 
-let db;
 
 export async function connectDB() {
-    return MongoDB.MongoClient.connect(config.db.host)
-    .then((client) => {
-        db = client.db('dwitter');
-    });
+    return Mongoose.connect(config.db.host, {dbName: "dwitter"});
 }
 
+export function useVirtualId(schema) {
+    schema.virtual('id').get(function() {
+        return this._id.toString();
+    });
+    schema.set('toJSON', {virtuals: true}); //toJSON, toObj 할 때에도 위 virtual에 있는 id 변환이 이루어 지도록.
+    schema.set('toObject', {virtuals: true});
+}
+
+let db;
 export function getUsers() {
     return db.collection('users');
   }
