@@ -13,8 +13,13 @@ import { sequelize } from './db/database.js';
 const app = express();
 dotenv.config();
 
+const corsOption = {
+    origin: config.cors.allowdOrigin,
+    optionsSuccessStatus: 200,
+}
+
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOption));
 app.use(morgan('[:date] :remote-addr :method :url :status :res[content-length] - :response-time ms'));
 app.use(helmet());
 
@@ -40,6 +45,7 @@ app.use((error, req, res, next) => {
 sequelize
 .sync()
 .then((client) => {
+    console.log(`Server started ... ${new Date()}`);
     // console.log(client);
-    app.listen(config.host.port);
+    app.listen(config.port);
 });
