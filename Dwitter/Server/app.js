@@ -4,6 +4,8 @@ import morgan  from 'morgan';
 import helmet from 'helmet';
 import 'express-async-errors';
 import dotenv from 'dotenv';
+import yaml from 'yamljs';
+import swaggerUI from 'swagger-ui-express';
 
 import tweetsRouter from './router/tweet.js';
 import authRouter from './router/auth_router.js';
@@ -18,6 +20,8 @@ const corsOption = {
     optionsSuccessStatus: 200,
 }
 
+const openAIPDocument = yaml.load('./api/openapi.yaml');
+
 app.use(express.json());
 app.use(cors(corsOption));
 app.use(morgan('[:date] :remote-addr :method :url :status :res[content-length] - :response-time ms'));
@@ -30,6 +34,10 @@ app.use('/', (req, res, next) => {
     console.log(req.url);
     next();
 });
+
+
+
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(openAIPDocument));
 app.use('/tweets', tweetsRouter);
 app.use('/Auth', authRouter);
 
